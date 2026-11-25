@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131a">
+  <title>Multi-AI Chat Workspace</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0d1118;--surface:#151c27;--surface2:#1b2532;--line:#293546;--text:#edf2f8;--muted:#9aa9ba;--accent:#b9a0ff;--green:#5ed6a0;--danger:#ff8f8f;--shadow:0 14px 40px #0003}
+    [data-theme="light"]{color-scheme:light;--bg:#f3f5f9;--surface:#fff;--surface2:#f6f7fb;--line:#e2e6ee;--text:#172033;--muted:#68758a;--accent:#7152c8;--green:#16865a;--danger:#c34444;--shadow:0 12px 32px #26334a12}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    .shell{max-width:1500px;margin:auto;padding:26px clamp(14px,3vw,38px) 40px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
+    .brand{display:flex;align-items:center;gap:12px}.mark{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#b9a0ff,#78d9bd);display:grid;place-items:center;color:#111827;font-weight:900;font-size:18px}
+    h1{font-size:20px;letter-spacing:-.5px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:2px}
+    button,input,textarea{font:inherit}.btn{border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:11px;padding:9px 13px;cursor:pointer}.btn:hover{border-color:var(--accent)}.btn.primary{background:var(--accent);border-color:var(--accent);color:#171321;font-weight:750}.btn:disabled{opacity:.45;cursor:not-allowed}
+    .prompt-card,.panel,.settings{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+    .prompt-card{padding:18px;margin-bottom:18px}.prompt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.prompt-head strong{font-size:14px}.hint{font-size:12px;color:var(--muted)}
+    textarea{width:100%;resize:vertical;min-height:94px;max-height:260px;border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:13px;padding:14px;outline:none}textarea:focus,input:focus{border-color:var(--accent)!important;outline:2px solid color-mix(in srgb,var(--accent) 20%,transparent)}
+    .prompt-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}.action-right{display:flex;gap:8px}
+    .settings{padding:14px 16px;margin-bottom:18px;box-shadow:none}.settings summary{cursor:pointer;font-weight:650;font-size:13px}.settings-body{padding-top:13px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}.settings label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}.settings input{width:100%;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--text)}.settings small{display:block;color:var(--muted);margin-top:8px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.panel{min-width:0;display:flex;flex-direction:column;min-height:410px;overflow:hidden;box-shadow:none}.panel-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}.agent{display:flex;align-items:center;gap:10px;font-weight:750}.agent-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:850;background:var(--surface2)}.state{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:4px 8px;white-space:nowrap}.state.ready{color:var(--green)}.state.off{color:var(--muted)}
+    .messages{padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;flex:1;min-height:230px;max-height:480px}.empty{margin:auto;text-align:center;color:var(--muted);font-size:13px;max-width:250px}.bubble{max-width:94%;padding:11px 13px;border-radius:13px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}.bubble.user{align-self:flex-end;background:color-mix(in srgb,var(--accent) 18%,var(--surface2));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line))}.bubble.assistant{align-self:flex-start;background:var(--surface2);border:1px solid var(--line)}.bubble.error{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}.bubble-label{font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+    .panel-compose{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px;align-items:end}.panel-compose textarea{min-height:42px;height:42px;max-height:120px;padding:10px 11px;font-size:13px}.panel-compose .btn{height:42px}.panel-foot{padding:0 13px 10px;color:var(--muted);font-size:11px}
+    .notice{border:1px dashed var(--line);background:var(--surface2);border-radius:12px;padding:13px;color:var(--muted);font-size:12px;margin:12px}.notice strong{color:var(--text)}
+    footer{text-align:center;color:var(--muted);font-size:11px;margin-top:22px}
+    @media(max-width:760px){.shell{padding:16px 12px 28px}header{margin-bottom:16px}.grid{grid-template-columns:1fr}.panel{min-height:390px}.messages{max-height:420px}.prompt-actions{align-items:stretch;flex-direction:column}.action-right{justify-content:flex-end}.settings-body{grid-template-columns:1fr}.settings-body .btn{justify-self:end}}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand"><div class="mark">AI</div><div><h1>Multi-AI Workspace</h1><div class="sub">One prompt. Independent conversations.</div></div></div>
+    <button class="btn" id="themeBtn" type="button" aria-label="Toggle theme">☼ Theme</button>
+  </header>
+
+  <section class="prompt-card">
+    <div class="prompt-head"><strong>Ask all available agents</strong><span class="hint">Enter to send · Shift + Enter for a new line</span></div>
+    <textarea id="mainPrompt" placeholder="What would you like the AI agents to help you with?"></textarea>
+    <div class="prompt-actions"><span class="hint" id="globalStatus">Gemini is the only provider enabled under the strict ₹0 setting.</span><div class="action-right"><button class="btn" id="clearBtn" type="button">Clear chats</button><button class="btn primary" id="sendAll" type="button">Send to available agents ↗</button></div></div>
+  </section>
+
+  <details class="settings" open>
+    <summary>Gemini connection · free tier only</summary>
+    <div class="settings-body">
+      <div><label for="apiKey">Google AI Studio API key</label><input id="apiKey" type="password" autocomplete="off" placeholder="Paste your Gemini API key for this session"><small>The key stays in this page's memory only. It is not saved to GitHub, local storage or session storage. Use a Google AI Studio project that remains on the free tier and has no paid billing enabled.</small></div>
+      <button class="btn" id="forgetKey" type="button">Forget key</button>
+    </div>
+  </details>
+
+  <main class="grid" id="panels">
+    <section class="panel" data-agent="chatgpt">
+      <div class="panel-head"><div class="agent"><span class="agent-icon">✳</span>ChatGPT</div><span class="state off">Not connected · ₹0 mode</span></div>
+      <div class="messages"><div class="empty">OpenAI API is not enabled. No paid requests will be made.</div></div>
+      <div class="notice"><strong>Unavailable in strict ₹0 mode.</strong> No genuine, ongoing free API allowance is assumed for this provider.</div>
+    </section>
+    <section class="panel" data-agent="claude">
+      <div class="panel-head"><div class="agent"><span class="agent-icon">✳</span>Claude</div><span class="state off">Not connected · ₹0 mode</span></div>
+      <div class="messages"><div class="empty">Anthropic API is not enabled. No paid requests will be made.</div></div>
+      <div class="notice"><strong>Unavailable in strict ₹0 mode.</strong> API trial credits are not treated as a permanent free tier.</div>
+    </section>
+    <section class="panel" data-agent="gemini">
+      <div class="panel-head"><div class="agent"><span class="agent-icon">✦</span>Gemini</div><span class="state ready" id="geminiState">Free API · Ready to configure</span></div>
+      <div class="messages" id="geminiMessages"><div class="empty">Add your Google AI Studio API key above, then send a prompt. Responses will appear here.</div></div>
+      <div class="panel-compose"><textarea id="geminiReply" placeholder="Reply to Gemini…" aria-label="Reply to Gemini"></textarea><button class="btn primary" id="geminiSend" type="button">Send</button></div>
+      <div class="panel-foot">Model: gemini-3.1-flash-lite · Free tier availability and rate limits apply.</div>
+    </section>
+    <section class="panel" data-agent="grok">
+      <div class="panel-head"><div class="agent"><span class="agent-icon">𝕏</span>Grok</div><span class="state off">Not connected · ₹0 mode</span></div>
+      <div class="messages"><div class="empty">xAI API is not enabled. No paid requests will be made.</div></div>
+      <div class="notice"><strong>Unavailable in strict ₹0 mode.</strong> No ongoing free API allowance is assumed for this provider.</div>
+    </section>
+  </main>
+  <footer>Temporary session only · Refreshing this page clears conversations and the API key · No chat database</footer>
+</div>
+<script>
+(() => {
+  const MODEL = "gemini-3.1-flash-lite";
+  let apiKey = "";
+  const history = [];
+  const $ = id => document.getElementById(id);
+  const messages = $("geminiMessages");
+  const state = $("geminiState");
+  const mainPrompt = $("mainPrompt");
+  let busy = false;
+
+  function addBubble(role, text, isError=false) {
+    const empty = messages.querySelector(".empty");
+    if (empty) empty.remove();
+    const bubble = document.createElement("div");
+    bubble.className = "bubble " + (isError ? "error" : role);
+    const label = document.createElement("div");
+    label.className = "bubble-label";
+    label.textContent = role === "user" ? "You" : (isError ? "Connection issue" : "Gemini");
+    const body = document.createElement("div");
+    body.textContent = text;
+    bubble.append(label, body);
+    messages.appendChild(bubble);
+    messages.scrollTop = messages.scrollHeight;
+    return body;
+  }
+  function setBusy(value) {
+    busy = value;
+    $("geminiSend").disabled = value;
+    $("sendAll").disabled = value;
+    state.textContent = value ? "Generating…" : (apiKey ? "Connected for this session" : "Free API · Ready to configure");
+  }
+  async function askGemini(text) {
+    if (!text.trim() || busy) return;
+    if (!apiKey) {
+      addBubble("assistant", "Please add your Google AI Studio API key in the connection section above. The key is used only in this page session.", true);
+      return;
+    }
+    addBubble("user", text);
+    history.push({role:"user",parts:[{text}]});
+    setBusy(true);
+    const output = addBubble("assistant", "Gemini is thinking…");
+    try {
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + MODEL + ":generateContent?key=" + encodeURIComponent(apiKey), {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({contents:history, generationConfig:{temperature:0.7}})
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        history.pop();
+        const msg = data?.error?.message || ("HTTP " + response.status);
+        output.textContent = "Request failed: " + msg;
+        output.parentElement.classList.add("error");
+      } else {
+        const answer = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("").trim();
+        if (!answer) throw new Error("The API returned no text. The response may have been blocked or unavailable.");
+        output.textContent = answer;
+        history.push({role:"model",parts:[{text:answer}]});
+      }
+    } catch (error) {
+      if (history.at(-1)?.role === "user") history.pop();
+      output.textContent = "Could not reach Gemini: " + (error.message || "Unknown error");
+      output.parentElement.classList.add("error");
+    } finally {
+      setBusy(false);
+    }
+  }
+  function submitMain() {
+    const text = mainPrompt.value.trim();
+    if (!text) return;
+    mainPrompt.value = "";
+    askGemini(text);
+  }
+  $("sendAll").addEventListener("click", submitMain);
+  $("geminiSend").addEventListener("click", () => {
+    const text = $("geminiReply").value.trim();
+    if (!text) return;
+    $("geminiReply").value = "";
+    askGemini(text);
+  });
+  mainPrompt.addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){e.preventDefault();submitMain();} });
+  $("geminiReply").addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){e.preventDefault();$("geminiSend").click();} });
+  $("apiKey").addEventListener("input", e => {
+    apiKey = e.target.value.trim();
+    state.textContent = apiKey ? "Key entered · not yet tested" : "Free API · Ready to configure";
+  });
+  $("forgetKey").addEventListener("click", () => { apiKey=""; $("apiKey").value=""; state.textContent="Free API · Ready to configure"; });
+  $("clearBtn").addEventListener("click", () => {
+    history.length = 0;
+    messages.innerHTML = '<div class="empty">Chat cleared. Add your API key above if needed, then send a prompt.</div>';
+  });
+  $("themeBtn").addEventListener("click", () => {
+    const light = document.documentElement.dataset.theme !== "light";
+    document.documentElement.dataset.theme = light ? "light" : "dark";
+    $("themeBtn").textContent = light ? "☾ Theme" : "☼ Theme";
+  });
+})();
+</script>
+</body>
+</html>
